@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <meta name="description"
+          content="RoadVision AI - Intelligent Road Damage Detection System">
+
+    <title>RoadVision AI | Road Damage Detection</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+
+</head>
+
+
+<body>
+
+
+<!-- =========================================================
+     NAVBAR
+========================================================= -->
+
+<nav class="navbar">
+
+    <div class="brand">
+
+        <div class="brand-icon">
+            AI
+        </div>
+
+        <div class="brand-name">
+            Road<span>Vision</span> AI
+        </div>
+
+    </div>
+
+
+    <div class="status">
+
+        <div class="status-dot"></div>
+
+        <span>
+            AI Detection System Online
+        </span>
+
+    </div>
+
+</nav>
+
+
+
+<!-- =========================================================
+     HERO SECTION
+========================================================= -->
+
+<section class="hero">
+
+    <div class="badge">
+        🚧 AI-POWERED ROAD INSPECTION
+    </div>
+
+
+    <h1>
+
+        Detect Road Damage
+
+        <br>
+
+        <span class="gradient-text">
+            Before It Becomes Dangerous
+        </span>
+
+    </h1>
+
+
+    <p>
+
+        An intelligent computer-vision system that automatically
+        detects potholes, cracks and manholes using YOLO-based
+        deep learning and generates severity and repair-priority
+        recommendations.
+
+    </p>
+
+</section>
+
+
+
+<!-- =========================================================
+     MAIN
+========================================================= -->
+
+<main class="main">
+
+
+<!-- =========================================================
+     UPLOAD PANEL
+========================================================= -->
+
+<section class="upload-panel">
+
+    <h2 class="upload-title">
+        Upload Road Image
+    </h2>
+
+
+    <p class="upload-subtitle">
+
+        Upload a road photograph and let our AI analyze
+        the damage automatically.
+
+    </p>
+
+
+
+    <!-- IMPORTANT: Flask analyzes /analyze -->
+
+    <form action="{{ url_for('analyze') }}"
+          method="POST"
+          enctype="multipart/form-data"
+          id="uploadForm">
+
+
+        <!-- DROP ZONE -->
+
+        <label class="drop-zone"
+               for="imageInput">
+
+
+            <div class="upload-content">
+
+
+                <div class="upload-icon">
+                    ↑
+                </div>
+
+
+                <h3>
+                    Choose a Road Image
+                </h3>
+
+
+                <p>
+                    JPG, JPEG or PNG • Click to browse
+                </p>
+
+
+                <!-- FILE INPUT -->
+
+                <input
+                    type="file"
+                    name="image"
+                    id="imageInput"
+                    accept=".jpg,.jpeg,.png,image/jpeg,image/png"
+                    required
+                >
+
+
+                <!-- =================================================
+                     SELECTED FILE NAME
+                ================================================== -->
+
+                <div class="selected-file"
+                     id="selectedFile">
+
+                    📷 No image selected
+
+                </div>
+
+
+                <!-- =================================================
+                     IMAGE PREVIEW
+                ================================================== -->
+
+                <div class="image-preview-container"
+                     id="previewContainer"
+                     hidden>
+
+                    <img
+                        id="imagePreview"
+                        class="image-preview"
+                        alt="Selected road image"
+                    >
+
+                </div>
+
+
+            </div>
+
+        </label>
+
+
+
+        <!-- ANALYZE BUTTON -->
+
+        <button
+            type="submit"
+            class="analyze-btn"
+            id="analyzeButton">
+
+            🔍 Analyze Road
+
+        </button>
+
+
+    </form>
+
+
+
+    <!-- =========================================================
+         SYSTEM STATS
+    ========================================================= -->
+
+    <div class="stats">
+
+
+        <div class="stat">
+
+            <strong>
+                YOLOv8
+            </strong>
+
+            <span>
+                Detection Model
+            </span>
+
+        </div>
+
+
+
+        <div class="stat">
+
+            <strong>
+                3
+            </strong>
+
+            <span>
+                Damage Classes
+            </span>
+
+        </div>
+
+
+
+        <div class="stat">
+
+            <strong>
+                AI
+            </strong>
+
+            <span>
+                Automated Analysis
+            </span>
+
+        </div>
+
+
+    </div>
+
+
+</section>
+
+
+
+<!-- =========================================================
+     RESULTS
+========================================================= -->
+
+{% if results is not none and results %}
+
+
+<section class="results">
+
+
+    <!-- RESULTS HEADER -->
+
+    <div class="results-header">
+
+
+        <div>
+
+            <h2>
+                Detection Results
+            </h2>
+
+
+            <p>
+                AI-powered analysis of the uploaded road image
+            </p>
+
+        </div>
+
+
+        <div class="ai-tag">
+            ✓ AI ANALYSIS COMPLETE
+        </div>
+
+
+    </div>
+
+
+
+    <!-- =========================================================
+         UPLOADED IMAGE INFORMATION
+    ========================================================= -->
+
+    {% if image %}
+
+    <div class="uploaded-image-name">
+
+        <span>
+            📷 Analyzed Image
+        </span>
+
+        <strong>
+            {{ image }}
+        </strong>
+
+    </div>
+
+    {% endif %}
+
+
+
+    <!-- =========================================================
+         RESULT GRID
+    ========================================================= -->
+
+    <div class="result-grid">
+
+
+        {% for result in results %}
+
+
+        <div class="result-card">
+
+
+            <!-- DAMAGE NAME -->
+
+            <div class="damage-name">
+
+
+                <div>
+
+                    <span class="damage-label">
+                        DETECTED DAMAGE
+                    </span>
+
+
+                    <h3>
+                        {{ result.damage_type | title }}
+                    </h3>
+
+                </div>
+
+
+                <span class="confidence">
+
+                    {{ "%.1f"|format(result.confidence) }}%
+
+                </span>
+
+
+            </div>
+
+
+
+            <!-- =================================================
+                 CONFIDENCE
+            ================================================== -->
+
+            <div class="metric">
+
+
+                <div class="metric-top">
+
+                    <span>
+                        Detection Confidence
+                    </span>
+
+                    <strong>
+                        {{ "%.1f"|format(result.confidence) }}%
+                    </strong>
+
+                </div>
+
+
+                <div class="bar">
+
+                    <div
+                        class="bar-fill"
+                        style="width: {{ result.confidence }}%;">
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- =================================================
+                 SEVERITY
+            ================================================== -->
+
+            <div class="metric">
+
+
+                <div class="metric-top">
+
+                    <span>
+                        Severity Score
+                    </span>
+
+                    <strong>
+                        {{ result.severity_score }}/100
+                    </strong>
+
+                </div>
+
+
+                <div class="bar">
+
+                    <div
+                        class="bar-fill"
+                        style="width: {{ result.severity_score }}%;">
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- =================================================
+                 INFORMATION
+            ================================================== -->
+
+            <div class="labels">
+
+
+                <!-- DAMAGE AREA -->
+
+                <div class="label-box">
+
+                    <small>
+                        DAMAGE AREA
+                    </small>
+
+                    <strong>
+                        {{ result.area_percentage }}%
+                    </strong>
+
+                </div>
+
+
+
+                <!-- SEVERITY -->
+
+                <div class="label-box">
+
+                    <small>
+                        SEVERITY
+                    </small>
+
+                    <strong>
+                        {{ result.severity }}
+                    </strong>
+
+                </div>
+
+
+
+                <!-- PRIORITY -->
+
+                <div class="label-box">
+
+                    <small>
+                        REPAIR PRIORITY
+                    </small>
+
+                    <strong>
+                        {{ result.priority }}
+                    </strong>
+
+                </div>
+
+
+
+                <!-- PRIORITY SCORE -->
+
+                <div class="label-box">
+
+                    <small>
+                        PRIORITY SCORE
+                    </small>
+
+                    <strong>
+                        {{ result.priority_score }}/100
+                    </strong>
+
+                </div>
+
+
+            </div>
+
+
+
+            <!-- =================================================
+                 RECOMMENDATION
+            ================================================== -->
+
+            <div class="recommendation">
+
+
+                <div class="recommendation-title">
+
+                    💡 Recommended Action
+
+                </div>
+
+
+                <p>
+
+                    {{ result.recommendation }}
+
+                </p>
+
+
+            </div>
+
+
+        </div>
+
+
+        {% endfor %}
+
+
+    </div>
+
+
+</section>
+
+
+{% endif %}
+
+
+
+<!-- =========================================================
+     NO DAMAGE DETECTED
+========================================================= -->
+
+{% if results is not none and not results %}
+
+
+<section class="results">
+
+
+    <div class="empty">
+
+
+        <div class="empty-icon">
+            ✓
+        </div>
+
+
+        <h2>
+            No Road Damage Detected
+        </h2>
+
+
+        <p>
+
+            The AI model did not detect any potholes,
+            cracks or manholes in this image.
+
+        </p>
+
+
+    </div>
+
+
+</section>
+
+
+{% endif %}
+
+
+
+<!-- =========================================================
+     MESSAGE
+========================================================= -->
+
+{% if message %}
+
+
+<section class="results">
+
+
+    <div class="empty">
+
+        {{ message }}
+
+    </div>
+
+
+</section>
+
+
+{% endif %}
+
+
+
+</main>
+
+
+
+<!-- =========================================================
+     FOOTER
+========================================================= -->
+
+<footer>
+
+
+    <div class="footer-brand">
+
+        <strong>
+            RoadVision AI
+        </strong>
+
+        <span>
+            Intelligent Road Damage Detection
+        </span>
+
+    </div>
+
+
+    <div class="footer-tech">
+
+        <span>
+            YOLOv8
+        </span>
+
+        <span>
+            Computer Vision
+        </span>
+
+        <span>
+            Machine Learning
+        </span>
+
+    </div>
+
+
+    <p class="copyright">
+
+        © 2026 RoadVision AI • Academic Project
+
+    </p>
+
+
+</footer>
+
+
+
+<!-- =========================================================
+     JAVASCRIPT
+     SHOW SELECTED FILE NAME + PREVIEW
+========================================================= -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+
+    const imageInput =
+        document.getElementById("imageInput");
+
+
+    const selectedFile =
+        document.getElementById("selectedFile");
+
+
+    const previewContainer =
+        document.getElementById("previewContainer");
+
+
+    const imagePreview =
+        document.getElementById("imagePreview");
+
+
+    const analyzeButton =
+        document.getElementById("analyzeButton");
+
+
+    const uploadForm =
+        document.getElementById("uploadForm");
+
+
+
+    /* =========================================================
+       WHEN USER SELECTS AN IMAGE
+    ========================================================= */
+
+    imageInput.addEventListener("change", function () {
+
+
+        if (this.files && this.files.length > 0) {
+
+
+            const file = this.files[0];
+
+
+            /* SHOW FILE NAME */
+
+            selectedFile.textContent =
+                "📷 Selected: " + file.name;
+
+
+            selectedFile.style.display =
+                "block";
+
+
+
+            /* SHOW IMAGE PREVIEW */
+
+            if (file.type.startsWith("image/")) {
+
+
+                const reader =
+                    new FileReader();
+
+
+                reader.onload =
+                    function (event) {
+
+
+                        imagePreview.src =
+                            event.target.result;
+
+
+                        previewContainer.hidden =
+                            false;
+
+
+                    };
+
+
+                reader.readAsDataURL(file);
+
+            }
+
+
+        }
+
+        else {
+
+
+            selectedFile.textContent =
+                "📷 No image selected";
+
+
+            previewContainer.hidden =
+                true;
+
+
+            imagePreview.removeAttribute("src");
+
+
+        }
+
+    });
+
+
+
+    /* =========================================================
+       SHOW ANALYZING MESSAGE
+    ========================================================== */
+
+    uploadForm.addEventListener("submit", function () {
+
+
+        if (!imageInput.files.length) {
+
+            return;
+
+        }
+
+
+        analyzeButton.innerHTML =
+            "⏳ Analyzing Road...";
+
+
+        analyzeButton.disabled =
+            true;
+
+
+    });
+
+
+});
+
+</script>
+
+
+
+</body>
+
+</html>
